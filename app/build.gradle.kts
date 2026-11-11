@@ -64,4 +64,10 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
+
+    // Firebase Firestore (os níveis ficam na nuvem). O BOM fixa as versões compatíveis.
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.firestore)
+    // Permite usar .await() nas tarefas do Firebase dentro de corrotinas.
+    implementation(libs.kotlinx.coroutines.play.services)
 }
