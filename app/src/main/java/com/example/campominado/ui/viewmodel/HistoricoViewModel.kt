@@ -68,6 +68,10 @@ class HistoricoViewModel(private val repository: JogoRepository) : ViewModel() {
     /** Chamado quando um jogador entra: passa a observar o histórico e o perfil dele. */
     fun definirJogador(jogadorId: Long) {
         jobJogador?.cancel()
+        // Limpa os dados do jogador anterior, para não aparecerem por um instante na tela do novo.
+        partidasBrutas = emptyList()
+        jogadorAtual = null
+        recalcular()
         jobJogador = viewModelScope.launch {
             launch {
                 repository.listarPartidasDoJogador(jogadorId).collect { r ->

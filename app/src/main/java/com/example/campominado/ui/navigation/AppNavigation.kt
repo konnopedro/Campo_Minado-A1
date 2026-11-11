@@ -51,6 +51,10 @@ fun AppNavigation(factory: ViewModelFactory) {
     // Sempre que o perfil muda (entrou, saiu), a navegação vai para a tela inicial dele.
     // O popUpTo(0) limpa o histórico de telas, para o botão Voltar não reabrir o Login.
     LaunchedEffect(sessao.perfil, sessao.jogadorId) {
+        // Na primeira execução o NavHost ainda pode não ter montado o grafo de telas;
+        // navegar agora daria erro. Não há problema em pular: o app já começa no Login.
+        if (navController.currentBackStackEntry == null) return@LaunchedEffect
+
         val destino = when (sessao.perfil) {
             Perfil.NENHUM -> Rotas.LOGIN
             Perfil.JOGADOR -> Rotas.NIVEIS
@@ -70,6 +74,7 @@ fun AppNavigation(factory: ViewModelFactory) {
         if (jogo.terminou) {
             navController.navigate(Rotas.RESULTADO) {
                 popUpTo(Rotas.JOGO) { inclusive = true }
+                launchSingleTop = true  // não abre o Resultado duas vezes (ex.: ao girar a tela)
             }
         }
     }
