@@ -16,6 +16,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.campominado.ui.screens.TelaAdmin
+import com.example.campominado.ui.screens.TelaEditarNivel
 import com.example.campominado.ui.screens.TelaEmConstrucao
 import com.example.campominado.ui.screens.TelaJogo
 import com.example.campominado.ui.viewmodel.AdminViewModel
@@ -44,6 +46,7 @@ fun AppNavigation(factory: ViewModelFactory) {
 
     val sessao by sessaoViewModel.uiState.collectAsState()
     val jogo by jogoViewModel.uiState.collectAsState()
+    val admin by adminViewModel.uiState.collectAsState()
 
     // Sempre que o perfil muda (entrou, saiu), a navegação vai para a tela inicial dele.
     // O popUpTo(0) limpa o histórico de telas, para o botão Voltar não reabrir o Login.
@@ -173,16 +176,33 @@ fun AppNavigation(factory: ViewModelFactory) {
             }
 
             composable(Rotas.ADMIN_NIVEIS) {
-                // TODO (item 7): Painel do Admin.
-                TelaEmConstrucao(
-                    titulo = "Painel do Admin",
-                    acoes = listOf("Sair" to { sessaoViewModel.sair() })
+                // Ao abrir o painel, busca os níveis no Firestore.
+                LaunchedEffect(Unit) { adminViewModel.carregar() }
+                TelaAdmin(
+                    estado = admin,
+                    onFiltrarMapa = adminViewModel::filtrarMapa,
+                    onEditar = { nivel ->
+                        adminViewModel.editarNivel(nivel)
+                        navController.navigate(Rotas.ADMIN_EDITAR)
+                    },
+                    onSair = { sessaoViewModel.sair() }
                 )
             }
 
             composable(Rotas.ADMIN_EDITAR) {
-                // TODO (item 7): Editar nível.
-                TelaEmConstrucao(titulo = "Editar nível")
+                // Quando o salvamento der certo, volta para o painel.
+                LaunchedEffect(admin.salvoComSucesso) {
+                    if (admin.salvoComSucesso) navController.popBackStack()
+                }
+                val nivelEmEdicao = admin.nivelEmEdicao
+                if (nivelEmEdicao != null) {
+                    TelaEditarNivel(
+                        nivel = nivelEmEdicao,
+                        erro = admin.erro,
+                        onSalvar = adminViewModel::salvarNivel,
+                        onCancelar = { navController.popBackStack() }
+                    )
+                }
             }
         }
     }
