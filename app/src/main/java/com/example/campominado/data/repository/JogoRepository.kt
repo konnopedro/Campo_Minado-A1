@@ -4,6 +4,9 @@ import com.example.campominado.data.local.dao.JogadorDao
 import com.example.campominado.data.local.dao.PartidaDao
 import com.example.campominado.data.local.entity.JogadorEntity
 import com.example.campominado.data.local.entity.PartidaEntity
+import com.example.campominado.data.remote.NivelRemoto
+import com.example.campominado.data.remote.NiveisRemoteDataSource
+import com.example.campominado.logic.NiveisPadrao
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
@@ -17,16 +20,70 @@ import kotlinx.coroutines.flow.map
  * de try-catch. Em vez de estourar uma exceção, devolvemos Resultado.Erro com
  * uma mensagem, e o ViewModel põe essa mensagem no UiState.
  *
- * Por enquanto só o Room está aqui. O Firestore (níveis) entra num passo seguinte.
+ * Room guarda jogadores e partidas (no aparelho). Firestore guarda a configuração dos níveis (na nuvem).
  */
 class JogoRepository(
     private val jogadorDao: JogadorDao,
-    private val partidaDao: PartidaDao
+    private val partidaDao: PartidaDao,
+    private val niveisRemoto: NiveisRemoteDataSource
 ) {
 
     companion object {
         const val NIVEL_MAXIMO = 15
     }
+
+    // ---------------------------------------------------------------
+    // NÍVEIS (Firestore, com valores padrão como reserva)
+    // ---------------------------------------------------------------
+
+    /**
+     * Os 15 níveis SEMPRE chegam completos. Se o Firestore falhar (sem internet,
+     * Firebase não configurado), usamos os valores padrão e preenchemos "erro",
+     * que o ViewModel mostra na tela. A lista nunca vem vazia.
+     */
+    data class NiveisCarregados(val niveis: List<NivelRemoto>, val erro: String? = null)
+
+    suspend fun carregarNiveis(): NiveisCarregados {
+        val padrao = NiveisPadrao.todos.map { NivelRemoto(it.nivel, it.tamanhoMapa, it.galhos) }
+        return try {
+            val remotos = niveisRemoto.buscarNiveis().associateBy { it.nivel }
+            // Para cada um dos 15 níveis, vale o do Firestore; se faltar, vale o padrão.
+            // O tamanho do mapa é fixo, então sempre vem do padrão.
+            val niveis = padrao.map { p ->
+                val r = remotos[p.nivel]
+                if (r == null) p else p.copy(galhos = r.galhos, ativo = r.ativo)
+            }
+            NiveisCarregados(niveis)
+        } catch (e: Exception) {
+            NiveisCarregados(padrao, "Sem conexão com o servidor. Usando os níveis padrão.")
+        }
+    }
+
+    // Admin: salva um nível. Valida antes: de 1 galho até 25% das casas do mapa.
+    suspend fun salvarNivel(nivel: NivelRemoto): Resultado<Unit> {
+        val padrao = NiveisPadrao.buscar(nivel.nivel)
+            ?: return Resultado.Erro("Nível inválido.")
+        val maximo = NiveisPadrao.maximoDeGalhos(padrao.tamanhoMapa)
+        if (nivel.galhos !in 1..maximo) {
+            return Resultado.Erro("Use de 1 a $maximo galhos neste nível.")
+        }
+        return try {
+            // Força o tamanho padrão: o tamanho do mapa de cada nível não muda.
+            niveisRemoto.salvarNivel(nivel.copy(tamanhoMapa = padrao.tamanhoMapa))
+            Resultado.Sucesso(Unit)
+        } catch (e: Exception) {
+            Resultado.Erro("Não foi possível salvar o nível. Verifique a conexão.")
+        }
+    }
+
+    // Admin: cria os 15 níveis no Firestore na primeira vez (só se a coleção estiver vazia).
+    suspend fun criarNiveisPadraoNoServidor(): Resultado<Unit> =
+        try {
+            niveisRemoto.criarNiveisPadraoSeVazio()
+            Resultado.Sucesso(Unit)
+        } catch (e: Exception) {
+            Resultado.Erro("Não foi possível preparar os níveis no servidor.")
+        }
 
     // ---------------------------------------------------------------
     // JOGADORES (CRUD completo)
