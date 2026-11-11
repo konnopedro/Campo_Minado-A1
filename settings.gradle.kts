@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "TungClock"
+rootProject.name = "CampoMinado"
 include(":app")

@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.tungclock"
+    namespace = "com.example.campominado"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.tungclock"
+        applicationId = "com.example.campominado"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -50,12 +50,9 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-
-    // Navigation Compose
     implementation(libs.androidx.navigation.compose)
 
     testImplementation(libs.junit)
-
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -68,4 +65,3 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 }
-
