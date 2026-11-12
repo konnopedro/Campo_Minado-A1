@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 import com.example.campominado.data.local.entity.PartidaEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -22,6 +23,10 @@ interface PartidaDao {
 
     @Insert
     suspend fun inserir(partida: PartidaEntity): Long
+
+    // Update do CRUD: regrava uma partida já salva (identificada pelo id).
+    @Update
+    suspend fun atualizar(partida: PartidaEntity)
 
     @Delete
     suspend fun excluir(partida: PartidaEntity)

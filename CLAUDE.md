@@ -96,5 +96,9 @@ fundo #F2F4EC, texto #1D2A1F, alerta #B4541A, azul #2D5F8B. Tema claro.
 
 - Feito: todas as camadas (Room, Firestore, Repository, logic, ViewModels, navegação) e as 8 telas,
   já ligadas aos ViewModels. Tema claro e README atualizados.
-- Pendente: configurar o projeto Firebase (arquivo `google-services.json` + plugin
-  `com.google.gms.google-services`). Sem isso o app funciona, mas sempre com os níveis padrão e o aviso de erro.
+- Feito também: Firebase configurado (`google-services.json` + plugin `com.google.gms.google-services`).
+  `PartidaDao`/`JogoRepository` ganharam `atualizar` (CRUD completo nas duas entidades).
+- Grupo de 3 pessoas (permitido pelo professor).
+- Pendente: README com prints e vídeo (espaços já reservados), testar no emulador (com e sem internet,
+  regras do Firestore), revisão para a defesa e entrega do link no Blackboard.
+- Antes da entrega: apagar CLAUDE.md e DIVISAO.md do repositório.
