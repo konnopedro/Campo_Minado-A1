@@ -3,6 +3,7 @@ package com.example.campominado.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.campominado.data.local.entity.JogadorEntity
+import com.example.campominado.data.remote.NivelRemoto
 import com.example.campominado.data.repository.JogoRepository
 import com.example.campominado.data.repository.Resultado
 import kotlinx.coroutines.Job
@@ -25,7 +26,11 @@ data class SessaoUiState(
     val jogadorNome: String = "",
     val nivelMaximoDesbloqueado: Int = 1,
     val jogadoresSalvos: List<JogadorEntity> = emptyList(),  // lista mostrada no Login
-    val erro: String? = null
+    val erro: String? = null,
+    // Tela de Níveis do Jogador: os 15 níveis (Firestore ou, sem internet, os padrão).
+    val niveis: List<NivelRemoto> = emptyList(),
+    val carregandoNiveis: Boolean = false,
+    val avisoNiveis: String? = null                          // ex.: "Sem conexão... usando os padrão"
 ) {
     val ehAdmin: Boolean get() = perfil == Perfil.ADMIN
     val ehJogador: Boolean get() = perfil == Perfil.JOGADOR
@@ -85,6 +90,21 @@ class SessaoViewModel(private val repository: JogoRepository) : ViewModel() {
 
     fun limparErro() {
         _uiState.update { it.copy(erro = null) }
+    }
+
+    /**
+     * Busca os 15 níveis para a tela de Níveis. Chamado sempre que a tela abre,
+     * para o Jogador ver na hora se o Admin mudou galhos ou desativou um nível.
+     * O Repository nunca devolve lista vazia: sem internet, vêm os valores padrão + aviso.
+     */
+    fun carregarNiveis() {
+        _uiState.update { it.copy(carregandoNiveis = true) }
+        viewModelScope.launch {
+            val carregados = repository.carregarNiveis()
+            _uiState.update {
+                it.copy(niveis = carregados.niveis, carregandoNiveis = false, avisoNiveis = carregados.erro)
+            }
+        }
     }
 
     // Passa a observar o jogador no banco: se o nível desbloqueado ou o nome mudarem

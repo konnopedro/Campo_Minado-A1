@@ -94,6 +94,7 @@ fundo #F2F4EC, texto #1D2A1F, alerta #B4541A, azul #2D5F8B. Tema claro.
 
 ## Situação atual
 
-- Feito: limpeza do projeto antigo; camada data.local (Room).
-- Pendências pequenas: README ainda descreve a mecânica antiga de "10 linhas"; tema está escuro (trocar para o claro).
-- Próximo passo: data.repository (JogoRepository com try-catch).
+- Feito: todas as camadas (Room, Firestore, Repository, logic, ViewModels, navegação) e as 8 telas,
+  já ligadas aos ViewModels. Tema claro e README atualizados.
+- Pendente: configurar o projeto Firebase (arquivo `google-services.json` + plugin
+  `com.google.gms.google-services`). Sem isso o app funciona, mas sempre com os níveis padrão e o aviso de erro.

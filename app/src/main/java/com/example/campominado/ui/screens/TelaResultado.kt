@@ -32,7 +32,8 @@ fun TelaResultado(
     onJogarNovamente: () -> Unit,
     onProximoNivel: () -> Unit,
     onVoltarNiveis: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    temProximoNivel: Boolean = true   // false no nível 15: não há próximo
 ) {
     val corDestaque = if (venceu) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
     val tempoFormatado = "%02d:%02d".format(tempoSegundos / 60, tempoSegundos % 60)
@@ -76,7 +77,7 @@ fun TelaResultado(
         Button(onClick = onJogarNovamente, modifier = Modifier.fillMaxWidth()) {
             Text("Jogar novamente")
         }
-        if (venceu) {
+        if (venceu && temProximoNivel) {
             Button(onClick = onProximoNivel, modifier = Modifier.fillMaxWidth()) {
                 Text("Próximo nível")
             }

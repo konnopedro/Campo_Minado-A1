@@ -8,14 +8,14 @@ Antes de começar e antes de cada push: `git pull`. Cada um mexe só nos arquivo
 | # | Tarefa | Commit sugerido | Status |
 |---|---|---|---|
 | 0 | Camada `logic` (regras do jogo) e `data.repository` | `feat-adicionar_regras_do_jogo`, `feat-adicionar_jogo_repository` | feito |
-| 1 | Firestore: dependências e `data.remote` | `feat-adicionar_firestore_niveis` | em andamento |
-| 2 | Ligar o Firestore ao `JogoRepository` (fallback `NiveisPadrao`) | `feat-integrar_firestore_no_repository` | |
-| 3 | `SessaoViewModel` e `JogoViewModel` com `UiState` | `feat-adicionar_viewmodels_sessao_e_jogo` | |
-| 4 | `HistoricoViewModel`, `AdminViewModel` e `ViewModelFactory` | `feat-adicionar_viewmodels_historico_e_admin` | |
-| 5 | Tela do Jogo (mapa N×N, cronômetro, Abrir/Placa, toque longo) | `feat-adicionar_tela_jogo` | |
-| 6 | Navegação: NavHost e Bottom Bar por perfil | `feat-adicionar_navegacao` | |
-| 7 | Painel do Admin e Editar nível | `feat-adicionar_telas_admin` | |
-| 8 | Ligar todas as telas aos ViewModels | `feat-integrar_telas_aos_viewmodels` | |
+| 1 | Firestore: dependências e `data.remote` | `feat-adicionar_firestore_niveis` | feito |
+| 2 | Ligar o Firestore ao `JogoRepository` (fallback `NiveisPadrao`) | `feat-integrar_firestore_no_repository` | feito |
+| 3 | `SessaoViewModel` e `JogoViewModel` com `UiState` | `feat-adicionar_viewmodels_sessao_e_jogo` | feito |
+| 4 | `HistoricoViewModel`, `AdminViewModel` e `ViewModelFactory` | `feat-adicionar_viewmodels_historico_e_admin` | feito |
+| 5 | Tela do Jogo (mapa N×N, cronômetro, Abrir/Placa, toque longo) | `feat-adicionar_tela_jogo` | feito |
+| 6 | Navegação: NavHost e Bottom Bar por perfil | `feat-adicionar_navegacao` | feito |
+| 7 | Painel do Admin e Editar nível | `feat-adicionar_telas_admin` | feito |
+| 8 | Ligar todas as telas aos ViewModels | `feat-integrar_telas_aos_viewmodels` | feito |
 
 ## Pessoa 2 — visual e documentação
 

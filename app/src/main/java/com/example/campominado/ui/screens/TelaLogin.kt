@@ -35,7 +35,8 @@ fun TelaLogin(
     jogadores: List<String>,
     onEntrarComoJogador: (String) -> Unit,
     onEntrarComoAdmin: (usuario: String, senha: String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    erro: String? = null   // vem do SessaoUiState (ex.: senha do admin errada, nome vazio)
 ) {
     var jogadorSelecionado by remember(jogadores) { mutableStateOf(jogadores.firstOrNull().orEmpty()) }
     var novoJogador by remember { mutableStateOf("") }
@@ -52,6 +53,10 @@ fun TelaLogin(
         Text("Campo Minado", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Text("Praça Osório • Curitiba", color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(24.dp))
+        if (erro != null) {
+            Text(erro, color = MaterialTheme.colorScheme.error)
+            Spacer(Modifier.height(8.dp))
+        }
 
         Card(
             modifier = Modifier.fillMaxWidth(),
