@@ -45,7 +45,8 @@ fun TelaEditarNivel(
     erro: String?,
     onSalvar: (galhos: Int, ativo: Boolean) -> Unit,
     onCancelar: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    salvando: Boolean = false   // true enquanto o Firestore não confirma: o botão fica desativado
 ) {
     // remember(nivel): se outro nível for aberto, os campos recomeçam com os valores dele.
     var galhosTexto by remember(nivel) { mutableStateOf(nivel.galhos.toString()) }
@@ -91,9 +92,9 @@ fun TelaEditarNivel(
             OutlinedButton(onClick = onCancelar, modifier = Modifier.weight(1f)) { Text("Cancelar") }
             Button(
                 onClick = { if (galhos != null) onSalvar(galhos, ativo) },
-                enabled = galhos != null,
+                enabled = galhos != null && !salvando,
                 modifier = Modifier.weight(1f)
-            ) { Text("Salvar") }
+            ) { Text(if (salvando) "Salvando…" else "Salvar") }
         }
     }
 }
