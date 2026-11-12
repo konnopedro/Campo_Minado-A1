@@ -98,6 +98,11 @@ class HistoricoViewModel(private val repository: JogoRepository) : ViewModel() {
         viewModelScope.launch { mostrarErro(repository.excluirPartida(partida)) }
     }
 
+    /** UPDATE da partida: grava (ou troca) a anotação do jogador. A lista se atualiza sozinha pelo Flow. */
+    fun anotarPartida(partida: PartidaEntity, anotacao: String) {
+        viewModelScope.launch { mostrarErro(repository.atualizarPartida(partida.copy(anotacao = anotacao.trim()))) }
+    }
+
     fun renomearPerfil(novoNome: String) {
         val jogador = jogadorAtual ?: return
         viewModelScope.launch { mostrarErro(repository.renomearJogador(jogador, novoNome)) }

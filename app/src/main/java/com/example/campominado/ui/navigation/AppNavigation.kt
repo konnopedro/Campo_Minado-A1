@@ -193,6 +193,7 @@ fun AppNavigation(factory: ViewModelFactory) {
                     erro = historico.erro,
                     onFiltrarResultado = historicoViewModel::filtrarResultado,
                     onExcluirPartida = historicoViewModel::excluirPartida,
+                    onAnotarPartida = historicoViewModel::anotarPartida,
                     onRenomearPerfil = historicoViewModel::renomearPerfil,
                     // Depois de excluir, a SessaoViewModel percebe que o jogador sumiu e faz o logout.
                     onExcluirPerfil = historicoViewModel::excluirPerfil,

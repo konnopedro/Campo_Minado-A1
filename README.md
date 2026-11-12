@@ -85,6 +85,13 @@ Jogo e Resultado ficam fora da barra de navegação.
   - `JogadorEntity`: nome, nível máximo desbloqueado e data de criação.
   - `PartidaEntity`: nível, tamanho do mapa, galhos, casas abertas, venceu, tempo e data. Tem chave estrangeira para o jogador com `CASCADE`.
   - As duas têm CRUD completo, e as listagens saem como `Flow<List<...>>` coletado pelos ViewModels.
+
+| Operação | `JogadorEntity` | `PartidaEntity` |
+|---|---|---|
+| **Create** | Login com um nome novo cadastra o jogador | Ao fim da partida, o resultado é salvo |
+| **Read** (`Flow`) | Lista de jogadores salvos no Login | Histórico do jogador, Recordes e melhores tempos |
+| **Update** | Renomear perfil; nível desbloqueado ao vencer | Anotar / editar a nota de uma partida no Histórico |
+| **Delete** | Excluir perfil (apaga as partidas, `CASCADE`) | Excluir partida no Histórico; o Admin exclui nos Recordes |
 - **Firebase Firestore (remoto):** a coleção `niveis` guarda a configuração dos 15 níveis. O jogador lê e o administrador edita.
 - **Sem internet:** o Repository usa os níveis padrão da tabela acima e o aviso de erro aparece na tela. O jogo continua funcionando.
 

@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.campominado.data.local.dao.JogadorDao
 import com.example.campominado.data.local.dao.PartidaDao
 import com.example.campominado.data.local.entity.JogadorEntity
@@ -11,11 +13,12 @@ import com.example.campominado.data.local.entity.PartidaEntity
 
 /**
  * O banco de dados do app. Lista as entidades (tabelas) e entrega os DAOs.
- * version = 1: se mudarmos alguma entidade depois, a versão precisa subir.
+ * version = 2: sempre que uma entidade muda, a versão sobe e precisamos de uma Migration.
+ * (v1 -> v2: a tabela partidas ganhou a coluna "anotacao".)
  */
 @Database(
     entities = [JogadorEntity::class, PartidaEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -37,7 +40,15 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "campo_minado.db"
-                ).build().also { instancia = it }
+                ).addMigrations(MIGRACAO_1_2).build().also { instancia = it }
+            }
+        }
+
+        // Quem já tinha o app com o banco v1 mantém jogadores e partidas:
+        // só acrescentamos a coluna nova, com texto vazio nas partidas antigas.
+        private val MIGRACAO_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE partidas ADD COLUMN anotacao TEXT NOT NULL DEFAULT ''")
             }
         }
     }

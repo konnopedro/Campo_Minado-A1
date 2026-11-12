@@ -43,6 +43,7 @@ fun TelaHistorico(
     erro: String?,
     onFiltrarResultado: (FiltroResultado) -> Unit,
     onExcluirPartida: (PartidaEntity) -> Unit,
+    onAnotarPartida: (PartidaEntity, String) -> Unit,
     onRenomearPerfil: (String) -> Unit,
     onExcluirPerfil: () -> Unit,
     modifier: Modifier = Modifier,
@@ -51,6 +52,8 @@ fun TelaHistorico(
     var mostrarRenomear by remember { mutableStateOf(false) }
     var mostrarConfirmacaoPerfil by remember { mutableStateOf(false) }
     var partidaParaExcluir by remember { mutableStateOf<PartidaEntity?>(null) }
+    var partidaParaAnotar by remember { mutableStateOf<PartidaEntity?>(null) }
+    var textoAnotacao by remember { mutableStateOf("") }
     var novoNome by remember(jogadorNome) { mutableStateOf(jogadorNome) }
 
     Column(
@@ -121,8 +124,18 @@ fun TelaHistorico(
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
+                                // Anotação do jogador (só aparece se houver).
+                                if (partida.anotacao.isNotBlank()) {
+                                    Text("📝 ${partida.anotacao}", style = MaterialTheme.typography.bodyMedium)
+                                }
                             }
-                            TextButton(onClick = { partidaParaExcluir = partida }) { Text("Excluir") }
+                            Column {
+                                TextButton(onClick = {
+                                    textoAnotacao = partida.anotacao
+                                    partidaParaAnotar = partida
+                                }) { Text(if (partida.anotacao.isBlank()) "Anotar" else "Editar nota") }
+                                TextButton(onClick = { partidaParaExcluir = partida }) { Text("Excluir") }
+                            }
                         }
                     }
                 }
@@ -164,6 +177,27 @@ fun TelaHistorico(
         )
     }
 
+    partidaParaAnotar?.let { partida ->
+        AlertDialog(
+            onDismissRequest = { partidaParaAnotar = null },
+            title = { Text("Anotação da partida") },
+            text = {
+                OutlinedTextField(
+                    value = textoAnotacao,
+                    onValueChange = { textoAnotacao = it },
+                    label = { Text("Ex.: errei na cascata") },
+                    maxLines = 3
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { onAnotarPartida(partida, textoAnotacao); partidaParaAnotar = null }) {
+                    Text("Salvar")
+                }
+            },
+            dismissButton = { TextButton(onClick = { partidaParaAnotar = null }) { Text("Cancelar") } }
+        )
+    }
+
     partidaParaExcluir?.let { partida ->
         AlertDialog(
             onDismissRequest = { partidaParaExcluir = null },
@@ -200,6 +234,7 @@ private fun TelaHistoricoPreview() {
             erro = null,
             onFiltrarResultado = {},
             onExcluirPartida = {},
+            onAnotarPartida = { _, _ -> },
             onRenomearPerfil = {},
             onExcluirPerfil = {}
         )
