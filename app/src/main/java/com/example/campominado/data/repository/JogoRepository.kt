@@ -7,6 +7,8 @@ import com.example.campominado.data.local.entity.PartidaEntity
 import com.example.campominado.data.remote.NivelRemoto
 import com.example.campominado.data.remote.NiveisRemoteDataSource
 import com.example.campominado.logic.NiveisPadrao
+import android.util.Log
+import com.google.firebase.firestore.FirebaseFirestoreException
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -36,6 +38,22 @@ class JogoRepository(
         // Quanto tempo esperamos o Firestore antes de desistir e avisar o erro.
         // Sem esse limite, sem internet (ou com o Firestore desligado) o app ficava "travado" esperando.
         const val TEMPO_LIMITE_MS = 8_000L
+
+        private const val TAG = "JogoRepository"
+    }
+
+    // Traduz a exceção do Firestore numa frase que explica o motivo real (e registra no Logcat).
+    private fun motivoDoErro(e: Exception): String {
+        Log.e(TAG, "Falha no Firestore", e)
+        return when ((e as? FirebaseFirestoreException)?.code) {
+            FirebaseFirestoreException.Code.PERMISSION_DENIED ->
+                "O Firestore recusou o acesso (verifique as regras e se o banco foi criado)."
+            FirebaseFirestoreException.Code.NOT_FOUND ->
+                "O banco Firestore ainda não foi criado no projeto."
+            FirebaseFirestoreException.Code.UNAVAILABLE ->
+                "Sem conexão com o servidor."
+            else -> "Falha ao falar com o servidor."
+        }
     }
 
     // ---------------------------------------------------------------
@@ -75,7 +93,7 @@ class JogoRepository(
         } catch (e: TimeoutCancellationException) {
             NiveisCarregados(niveisEmCache ?: niveisPadrao, "O servidor demorou para responder. Usando os níveis padrão.")
         } catch (e: Exception) {
-            NiveisCarregados(niveisEmCache ?: niveisPadrao, "Sem conexão com o servidor. Usando os níveis padrão.")
+            NiveisCarregados(niveisEmCache ?: niveisPadrao, "${motivoDoErro(e)} Usando os níveis padrão.")
         }
 
     /** Para começar uma partida: usa a lista em memória, se houver; senão, busca no Firestore. */
@@ -110,7 +128,7 @@ class JogoRepository(
         } catch (e: TimeoutCancellationException) {
             Resultado.Erro("O servidor demorou para responder. O nível não foi salvo.")
         } catch (e: Exception) {
-            Resultado.Erro("Não foi possível salvar o nível. Verifique a conexão.")
+            Resultado.Erro("Não foi possível salvar o nível. ${motivoDoErro(e)}")
         }
     }
 
