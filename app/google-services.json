@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "567681073479",
+    "project_id": "campo-minado-praca-osorio",
+    "storage_bucket": "campo-minado-praca-osorio.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:567681073479:android:729f32f1a7e2aa12d00c62",
+        "android_client_info": {
+          "package_name": "com.example.campominado"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-UjVUy-TvRF5ITi1rxROWrqZ09lYG614"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

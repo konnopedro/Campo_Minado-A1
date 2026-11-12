@@ -13,6 +13,7 @@ ksp = "2.3.10"
 room = "2.7.2"
 firebaseBom = "33.7.0"
 coroutinesPlayServices = "1.8.1"
+googleServices = "4.4.4"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -42,3 +43,5 @@ kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "ko
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+# Lê o app/google-services.json e liga o app ao projeto do Firebase.
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
