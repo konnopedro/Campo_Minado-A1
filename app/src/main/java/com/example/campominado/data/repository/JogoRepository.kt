@@ -215,6 +215,15 @@ class JogoRepository(
             Resultado.Erro("Não foi possível salvar a partida.")
         }
 
+    // Atualiza uma partida já salva (Update do CRUD da PartidaEntity).
+    suspend fun atualizarPartida(partida: PartidaEntity): Resultado<Unit> =
+        try {
+            partidaDao.atualizar(partida)
+            Resultado.Sucesso(Unit)
+        } catch (e: Exception) {
+            Resultado.Erro("Não foi possível atualizar a partida.")
+        }
+
     // Excluir uma partida (Histórico do jogador ou Recordes, pelo Admin).
     suspend fun excluirPartida(partida: PartidaEntity): Resultado<Unit> =
         try {
