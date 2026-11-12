@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+    // Firebase: lê o google-services.json (sem ele o Firestore não sabe a qual projeto se conectar).
+    alias(libs.plugins.google.services)
 }
 
 android {
