@@ -1,5 +1,6 @@
 package com.example.campominado.data.local.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -38,5 +39,10 @@ data class PartidaEntity(
     val casasAbertas: Int,     // quantas casas seguras o jogador abriu
     val venceu: Boolean,       // Room guarda como 0 ou 1
     val tempoSegundos: Int,
-    val data: Long = System.currentTimeMillis()
+    val data: Long = System.currentTimeMillis(),
+
+    // Nota que o jogador escreve sobre a partida, no Histórico. É o que o UPDATE da partida altera.
+    // defaultValue = "": as partidas antigas (banco versão 1) ficam com a nota vazia.
+    @ColumnInfo(defaultValue = "")
+    val anotacao: String = ""
 )
