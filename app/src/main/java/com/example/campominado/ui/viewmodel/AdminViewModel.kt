@@ -18,6 +18,7 @@ data class AdminUiState(
     val filtroMapa: Int? = null,                      // null = todos os tamanhos
     val tamanhosDeMapa: List<Int> = listOf(6, 7, 8, 9, 10),
     val nivelEmEdicao: NivelRemoto? = null,           // nível aberto na tela Editar
+    val salvando: Boolean = false,                    // true enquanto espera o Firestore confirmar
     val salvoComSucesso: Boolean = false,             // a tela Editar volta quando vira true
     val erro: String? = null
 ) {
@@ -36,8 +37,7 @@ class AdminViewModel(private val repository: JogoRepository) : ViewModel() {
     fun carregar() {
         _uiState.update { it.copy(carregando = true) }
         viewModelScope.launch {
-            repository.criarNiveisPadraoNoServidor()  // se falhar, carregarNiveis() também avisa o erro
-            val carregados = repository.carregarNiveis()
+            val carregados = repository.carregarNiveis(criarSeVazio = true)
             _uiState.update { it.copy(carregando = false, niveis = carregados.niveis, erro = carregados.erro) }
         }
     }
@@ -54,6 +54,8 @@ class AdminViewModel(private val repository: JogoRepository) : ViewModel() {
     /** Salva a mudança no Firestore. O Repository valida o limite de galhos (1 até 25% das casas). */
     fun salvarNivel(galhos: Int, ativo: Boolean) {
         val nivel = _uiState.value.nivelEmEdicao ?: return
+        if (_uiState.value.salvando) return              // ignora toque duplo no Salvar
+        _uiState.update { it.copy(salvando = true, erro = null) }
         viewModelScope.launch {
             val atualizado = nivel.copy(galhos = galhos, ativo = ativo)
             when (val resultado = repository.salvarNivel(atualizado)) {
@@ -61,11 +63,12 @@ class AdminViewModel(private val repository: JogoRepository) : ViewModel() {
                     estado.copy(
                         // Troca só o nível editado na lista, sem precisar recarregar tudo.
                         niveis = estado.niveis.map { if (it.nivel == atualizado.nivel) atualizado else it },
+                        salvando = false,
                         salvoComSucesso = true,
                         erro = null
                     )
                 }
-                is Resultado.Erro -> _uiState.update { it.copy(erro = resultado.mensagem) }
+                is Resultado.Erro -> _uiState.update { it.copy(salvando = false, erro = resultado.mensagem) }
             }
         }
     }

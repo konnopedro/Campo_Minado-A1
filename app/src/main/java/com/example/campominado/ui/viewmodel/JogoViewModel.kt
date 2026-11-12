@@ -44,14 +44,17 @@ class JogoViewModel(private val repository: JogoRepository) : ViewModel() {
     private var jogadorId: Long = 0
     private var jobCronometro: Job? = null
 
-    /** Começa (ou recomeça) um nível. Busca os galhos no Firestore, com os valores padrão de reserva. */
+    /**
+     * Começa (ou recomeça) um nível. Usa os níveis já carregados pela tela de Níveis (em memória);
+     * só busca no Firestore se ainda não houver nenhum. Assim o jogo abre na hora.
+     */
     fun iniciar(nivel: Int, jogadorId: Long) {
         this.jogadorId = jogadorId
         pararCronometro()
         _uiState.value = JogoUiState(carregando = true, nivel = nivel)
 
         viewModelScope.launch {
-            val carregados = repository.carregarNiveis()
+            val carregados = repository.niveisParaJogar()
             val config = carregados.niveis.firstOrNull { it.nivel == nivel }
 
             if (config == null || !config.ativo) {

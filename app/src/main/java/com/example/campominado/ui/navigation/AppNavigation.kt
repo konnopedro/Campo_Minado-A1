@@ -201,8 +201,9 @@ fun AppNavigation(factory: ViewModelFactory) {
             }
 
             composable(Rotas.ADMIN_NIVEIS) {
-                // Ao abrir o painel, busca os níveis no Firestore.
-                LaunchedEffect(Unit) { adminViewModel.carregar() }
+                // Busca os níveis no Firestore só na primeira vez que o painel abre.
+                // Ao voltar da tela Editar não precisa: o ViewModel já atualizou o nível salvo na lista.
+                LaunchedEffect(Unit) { if (admin.niveis.isEmpty()) adminViewModel.carregar() }
                 TelaAdmin(
                     estado = admin,
                     onFiltrarMapa = adminViewModel::filtrarMapa,
@@ -224,6 +225,7 @@ fun AppNavigation(factory: ViewModelFactory) {
                     TelaEditarNivel(
                         nivel = nivelEmEdicao,
                         erro = admin.erro,
+                        salvando = admin.salvando,
                         onSalvar = adminViewModel::salvarNivel,
                         onCancelar = { navController.popBackStack() }
                     )
