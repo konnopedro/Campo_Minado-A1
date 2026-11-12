@@ -45,7 +45,8 @@ fun TelaHistorico(
     onExcluirPartida: (PartidaEntity) -> Unit,
     onRenomearPerfil: (String) -> Unit,
     onExcluirPerfil: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onSair: (() -> Unit)? = null   // volta ao Login (o perfil continua salvo)
 ) {
     var mostrarRenomear by remember { mutableStateOf(false) }
     var mostrarConfirmacaoPerfil by remember { mutableStateOf(false) }
@@ -70,6 +71,9 @@ fun TelaHistorico(
                     }
                     OutlinedButton(onClick = { mostrarConfirmacaoPerfil = true }) {
                         Text("Excluir perfil")
+                    }
+                    if (onSair != null) {
+                        OutlinedButton(onClick = onSair) { Text("Sair") }
                     }
                 }
             }

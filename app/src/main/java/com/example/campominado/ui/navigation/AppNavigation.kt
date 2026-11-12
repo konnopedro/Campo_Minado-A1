@@ -18,8 +18,12 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.campominado.ui.screens.TelaAdmin
 import com.example.campominado.ui.screens.TelaEditarNivel
-import com.example.campominado.ui.screens.TelaEmConstrucao
+import com.example.campominado.ui.screens.TelaHistorico
 import com.example.campominado.ui.screens.TelaJogo
+import com.example.campominado.ui.screens.TelaLogin
+import com.example.campominado.ui.screens.TelaNiveis
+import com.example.campominado.ui.screens.TelaRecordes
+import com.example.campominado.ui.screens.TelaResultado
 import com.example.campominado.ui.viewmodel.AdminViewModel
 import com.example.campominado.ui.viewmodel.HistoricoViewModel
 import com.example.campominado.ui.viewmodel.JogoViewModel
@@ -33,7 +37,8 @@ import com.example.campominado.ui.viewmodel.ViewModelFactory
  * Os ViewModels são criados aqui, no nível da Activity, e compartilhados entre as telas
  * (por exemplo, o JogoViewModel é o mesmo na tela do Jogo e na tela de Resultado).
  *
- * As telas marcadas com TelaEmConstrucao são provisórias e serão trocadas pelas reais.
+ * As telas não conhecem os ViewModels: recebem dados (do UiState) e cliques (funções do ViewModel)
+ * por parâmetro. É aqui que as duas pontas se encontram.
  */
 @Composable
 fun AppNavigation(factory: ViewModelFactory) {
@@ -46,6 +51,7 @@ fun AppNavigation(factory: ViewModelFactory) {
 
     val sessao by sessaoViewModel.uiState.collectAsState()
     val jogo by jogoViewModel.uiState.collectAsState()
+    val historico by historicoViewModel.uiState.collectAsState()
     val admin by adminViewModel.uiState.collectAsState()
 
     // Sempre que o perfil muda (entrou, saiu), a navegação vai para a tela inicial dele.
@@ -113,28 +119,28 @@ fun AppNavigation(factory: ViewModelFactory) {
             modifier = Modifier.padding(espaco)
         ) {
             composable(Rotas.LOGIN) {
-                // TODO (Pessoa 2): trocar pela TelaLogin real.
-                TelaEmConstrucao(
-                    titulo = "Login",
-                    acoes = listOf(
-                        "Entrar como Jogador (teste)" to { sessaoViewModel.entrarComoJogador("Jogador") },
-                        "Entrar como Admin (teste)" to { sessaoViewModel.entrarComoAdmin("admin", "admin123") }
-                    )
+                TelaLogin(
+                    jogadores = sessao.jogadoresSalvos.map { it.nome },
+                    onEntrarComoJogador = sessaoViewModel::entrarComoJogador,
+                    onEntrarComoAdmin = sessaoViewModel::entrarComoAdmin,
+                    erro = sessao.erro
                 )
             }
 
             composable(Rotas.NIVEIS) {
-                // TODO (Pessoa 3): trocar pela TelaNiveis real.
-                TelaEmConstrucao(
-                    titulo = "Níveis",
-                    acoes = listOf(
-                        "Jogar nível 1 (teste)" to {
-                            // Prepara a partida ANTES de navegar, para o Jogo já abrir com o mapa pronto.
-                            jogoViewModel.iniciar(1, sessao.jogadorId ?: 0)
-                            navController.navigate(Rotas.JOGO)
-                        },
-                        "Sair" to { sessaoViewModel.sair() }
-                    )
+                // Ao abrir a tela, busca os níveis de novo (o Admin pode ter mudado algo no Firestore).
+                LaunchedEffect(Unit) { sessaoViewModel.carregarNiveis() }
+                TelaNiveis(
+                    niveis = sessao.niveis,
+                    nivelMaximoDesbloqueado = sessao.nivelMaximoDesbloqueado,
+                    melhoresTempos = historico.melhoresTempos,
+                    onSelecionarNivel = { nivel ->
+                        // Prepara a partida ANTES de navegar, para o Jogo já abrir com o mapa pronto.
+                        jogoViewModel.iniciar(nivel, sessao.jogadorId ?: 0)
+                        navController.navigate(Rotas.JOGO)
+                    },
+                    carregando = sessao.carregandoNiveis,
+                    erro = sessao.avisoNiveis
                 )
             }
 
@@ -149,35 +155,49 @@ fun AppNavigation(factory: ViewModelFactory) {
             }
 
             composable(Rotas.RESULTADO) {
-                // TODO (Pessoa 2): trocar pela TelaResultado real (pode usar o MapaCampo).
-                TelaEmConstrucao(
-                    titulo = if (jogo.venceu) "Vitória!" else "Fim de jogo",
-                    acoes = buildList {
-                        add("Jogar de novo" to {
-                            jogoViewModel.jogarDeNovo()
-                            navController.navigate(Rotas.JOGO) { popUpTo(Rotas.RESULTADO) { inclusive = true } }
-                        })
-                        if (jogo.venceu && jogo.temProximoNivel) {
-                            add("Próximo nível" to {
-                                jogoViewModel.irParaProximoNivel()
-                                navController.navigate(Rotas.JOGO) { popUpTo(Rotas.RESULTADO) { inclusive = true } }
-                            })
-                        }
-                        add("Voltar aos níveis" to {
-                            navController.navigate(Rotas.NIVEIS) { popUpTo(Rotas.RESULTADO) { inclusive = true } }
-                        })
-                    }
+                TelaResultado(
+                    venceu = jogo.venceu,
+                    nivel = jogo.nivel,
+                    tempoSegundos = jogo.segundos,
+                    temProximoNivel = jogo.temProximoNivel,
+                    onJogarNovamente = {
+                        jogoViewModel.jogarDeNovo()
+                        navController.navigate(Rotas.JOGO) { popUpTo(Rotas.RESULTADO) { inclusive = true } }
+                    },
+                    onProximoNivel = {
+                        jogoViewModel.irParaProximoNivel()
+                        navController.navigate(Rotas.JOGO) { popUpTo(Rotas.RESULTADO) { inclusive = true } }
+                    },
+                    // A tela de Níveis já está embaixo na pilha: basta voltar até ela
+                    // (navegar de novo criaria uma segunda cópia da tela de Níveis).
+                    onVoltarNiveis = { navController.popBackStack(Rotas.NIVEIS, inclusive = false) }
                 )
             }
 
             composable(Rotas.RECORDES) {
-                // TODO (Pessoa 3): trocar pela TelaRecordes real.
-                TelaEmConstrucao(titulo = "Recordes")
+                TelaRecordes(
+                    recordes = historico.recordes,
+                    filtroMapa = historico.filtroMapa,
+                    tamanhosDeMapa = historico.tamanhosDeMapa,
+                    onFiltrarMapa = historicoViewModel::filtrarMapa,
+                    // Só o Admin pode excluir recordes: para o Jogador passamos null e o botão some.
+                    onExcluirPartida = if (sessao.ehAdmin) historicoViewModel::excluirPartida else null
+                )
             }
 
             composable(Rotas.HISTORICO) {
-                // TODO (Pessoa 3): trocar pela TelaHistorico real.
-                TelaEmConstrucao(titulo = "Histórico e Perfil")
+                TelaHistorico(
+                    jogadorNome = historico.jogadorNome,
+                    partidas = historico.partidas,
+                    filtroResultado = historico.filtroResultado,
+                    erro = historico.erro,
+                    onFiltrarResultado = historicoViewModel::filtrarResultado,
+                    onExcluirPartida = historicoViewModel::excluirPartida,
+                    onRenomearPerfil = historicoViewModel::renomearPerfil,
+                    // Depois de excluir, a SessaoViewModel percebe que o jogador sumiu e faz o logout.
+                    onExcluirPerfil = historicoViewModel::excluirPerfil,
+                    onSair = sessaoViewModel::sair
+                )
             }
 
             composable(Rotas.ADMIN_NIVEIS) {
