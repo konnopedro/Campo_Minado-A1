@@ -3,6 +3,7 @@ package com.example.campominado.ui.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,19 +32,9 @@ import com.example.campominado.ui.viewmodel.Perfil
 import com.example.campominado.ui.viewmodel.SessaoViewModel
 import com.example.campominado.ui.viewmodel.ViewModelFactory
 
-/**
- * Esqueleto do app: cria os ViewModels, a Bottom Bar (que muda conforme o perfil) e o NavHost.
- *
- * Os ViewModels são criados aqui, no nível da Activity, e compartilhados entre as telas
- * (por exemplo, o JogoViewModel é o mesmo na tela do Jogo e na tela de Resultado).
- *
- * As telas não conhecem os ViewModels: recebem dados (do UiState) e cliques (funções do ViewModel)
- * por parâmetro. É aqui que as duas pontas se encontram.
- */
 @Composable
 fun AppNavigation(factory: ViewModelFactory) {
     val navController = rememberNavController()
-
     val sessaoViewModel: SessaoViewModel = viewModel(factory = factory)
     val jogoViewModel: JogoViewModel = viewModel(factory = factory)
     val historicoViewModel: HistoricoViewModel = viewModel(factory = factory)
@@ -54,13 +45,8 @@ fun AppNavigation(factory: ViewModelFactory) {
     val historico by historicoViewModel.uiState.collectAsState()
     val admin by adminViewModel.uiState.collectAsState()
 
-    // Sempre que o perfil muda (entrou, saiu), a navegação vai para a tela inicial dele.
-    // O popUpTo(0) limpa o histórico de telas, para o botão Voltar não reabrir o Login.
     LaunchedEffect(sessao.perfil, sessao.jogadorId) {
-        // Na primeira execução o NavHost ainda pode não ter montado o grafo de telas;
-        // navegar agora daria erro. Não há problema em pular: o app já começa no Login.
         if (navController.currentBackStackEntry == null) return@LaunchedEffect
-
         val destino = when (sessao.perfil) {
             Perfil.NENHUM -> Rotas.LOGIN
             Perfil.JOGADOR -> Rotas.NIVEIS
@@ -75,38 +61,46 @@ fun AppNavigation(factory: ViewModelFactory) {
         }
     }
 
-    // Quando a partida termina, vai para o Resultado (e tira o Jogo da pilha de telas).
     LaunchedEffect(jogo.terminou) {
         if (jogo.terminou) {
             navController.navigate(Rotas.RESULTADO) {
                 popUpTo(Rotas.JOGO) { inclusive = true }
-                launchSingleTop = true  // não abre o Resultado duas vezes (ex.: ao girar a tela)
+                launchSingleTop = true
             }
         }
     }
 
-    // A Bottom Bar só aparece nas telas "principais" (não no Login, Jogo, Resultado nem Editar).
     val rotaAtual = navController.currentBackStackEntryAsState().value?.destination?.route
     val itensBarra = itensDaBarra(sessao.perfil)
     val mostrarBarra = itensBarra.any { it.rota == rotaAtual }
 
     Scaffold(
+        containerColor = androidx.compose.material3.MaterialTheme.colorScheme.background,
         bottomBar = {
             if (mostrarBarra) {
-                NavigationBar {
+                NavigationBar(
+                    containerColor = androidx.compose.material3.MaterialTheme.colorScheme.surface,
+                    contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface
+                ) {
                     itensBarra.forEach { item ->
                         NavigationBarItem(
                             selected = rotaAtual == item.rota,
                             onClick = {
                                 navController.navigate(item.rota) {
-                                    // Evita empilhar a mesma tela várias vezes ao trocar de aba.
                                     popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                                     launchSingleTop = true
                                     restoreState = true
                                 }
                             },
                             icon = { Text(item.icone) },
-                            label = { Text(item.rotulo) }
+                            label = { Text(item.rotulo) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                selectedTextColor = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                                indicatorColor = androidx.compose.material3.MaterialTheme.colorScheme.primaryContainer,
+                                unselectedIconColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         )
                     }
                 }
@@ -126,16 +120,13 @@ fun AppNavigation(factory: ViewModelFactory) {
                     erro = sessao.erro
                 )
             }
-
             composable(Rotas.NIVEIS) {
-                // Ao abrir a tela, busca os níveis de novo (o Admin pode ter mudado algo no Firestore).
                 LaunchedEffect(Unit) { sessaoViewModel.carregarNiveis() }
                 TelaNiveis(
                     niveis = sessao.niveis,
                     nivelMaximoDesbloqueado = sessao.nivelMaximoDesbloqueado,
                     melhoresTempos = historico.melhoresTempos,
                     onSelecionarNivel = { nivel ->
-                        // Prepara a partida ANTES de navegar, para o Jogo já abrir com o mapa pronto.
                         jogoViewModel.iniciar(nivel, sessao.jogadorId ?: 0)
                         navController.navigate(Rotas.JOGO)
                     },
@@ -143,7 +134,6 @@ fun AppNavigation(factory: ViewModelFactory) {
                     erro = sessao.avisoNiveis
                 )
             }
-
             composable(Rotas.JOGO) {
                 TelaJogo(
                     estado = jogo,
@@ -153,7 +143,6 @@ fun AppNavigation(factory: ViewModelFactory) {
                     onVoltar = { navController.popBackStack() }
                 )
             }
-
             composable(Rotas.RESULTADO) {
                 TelaResultado(
                     venceu = jogo.venceu,
@@ -168,23 +157,18 @@ fun AppNavigation(factory: ViewModelFactory) {
                         jogoViewModel.irParaProximoNivel()
                         navController.navigate(Rotas.JOGO) { popUpTo(Rotas.RESULTADO) { inclusive = true } }
                     },
-                    // A tela de Níveis já está embaixo na pilha: basta voltar até ela
-                    // (navegar de novo criaria uma segunda cópia da tela de Níveis).
                     onVoltarNiveis = { navController.popBackStack(Rotas.NIVEIS, inclusive = false) }
                 )
             }
-
             composable(Rotas.RECORDES) {
                 TelaRecordes(
                     recordes = historico.recordes,
                     filtroMapa = historico.filtroMapa,
                     tamanhosDeMapa = historico.tamanhosDeMapa,
                     onFiltrarMapa = historicoViewModel::filtrarMapa,
-                    // Só o Admin pode excluir recordes: para o Jogador passamos null e o botão some.
                     onExcluirPartida = if (sessao.ehAdmin) historicoViewModel::excluirPartida else null
                 )
             }
-
             composable(Rotas.HISTORICO) {
                 TelaHistorico(
                     jogadorNome = historico.jogadorNome,
@@ -195,15 +179,11 @@ fun AppNavigation(factory: ViewModelFactory) {
                     onExcluirPartida = historicoViewModel::excluirPartida,
                     onAnotarPartida = historicoViewModel::anotarPartida,
                     onRenomearPerfil = historicoViewModel::renomearPerfil,
-                    // Depois de excluir, a SessaoViewModel percebe que o jogador sumiu e faz o logout.
                     onExcluirPerfil = historicoViewModel::excluirPerfil,
                     onSair = sessaoViewModel::sair
                 )
             }
-
             composable(Rotas.ADMIN_NIVEIS) {
-                // Busca os níveis no Firestore só na primeira vez que o painel abre.
-                // Ao voltar da tela Editar não precisa: o ViewModel já atualizou o nível salvo na lista.
                 LaunchedEffect(Unit) { if (admin.niveis.isEmpty()) adminViewModel.carregar() }
                 TelaAdmin(
                     estado = admin,
@@ -215,9 +195,7 @@ fun AppNavigation(factory: ViewModelFactory) {
                     onSair = { sessaoViewModel.sair() }
                 )
             }
-
             composable(Rotas.ADMIN_EDITAR) {
-                // Quando o salvamento der certo, volta para o painel.
                 LaunchedEffect(admin.salvoComSucesso) {
                     if (admin.salvoComSucesso) navController.popBackStack()
                 }
