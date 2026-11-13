@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // A fábrica monta o Repository (Room + Firestore) e entrega aos ViewModels.
+
                     val factory = remember { ViewModelFactory.criar(applicationContext) }
                     AppNavigation(factory)
                 }

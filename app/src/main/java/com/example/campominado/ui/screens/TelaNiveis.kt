@@ -25,10 +25,6 @@ import com.example.campominado.data.remote.NivelRemoto
 import com.example.campominado.logic.NiveisPadrao
 import com.example.campominado.ui.theme.CampoMinadoTheme
 
-/**
- * Mostra os 15 níveis em cartões agrupados pelo tamanho do mapa.
- * A tela recebe somente dados e callbacks; desbloqueio e melhores tempos vêm de fora.
- */
 @Composable
 fun TelaNiveis(
     niveis: List<NivelRemoto>,

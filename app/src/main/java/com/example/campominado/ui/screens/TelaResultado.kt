@@ -20,10 +20,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.campominado.ui.theme.CampoMinadoTheme
 
-/**
- * Resultado visual de uma partida. Recebe apenas os dados necessários e callbacks;
- * não acessa ViewModel nem contém regras para determinar vitória ou derrota.
- */
 @Composable
 fun TelaResultado(
     venceu: Boolean,
@@ -33,7 +29,7 @@ fun TelaResultado(
     onProximoNivel: () -> Unit,
     onVoltarNiveis: () -> Unit,
     modifier: Modifier = Modifier,
-    temProximoNivel: Boolean = true   // false no nível 15: não há próximo
+    temProximoNivel: Boolean = true
 ) {
     val corDestaque = if (venceu) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
     val tempoFormatado = "%02d:%02d".format(tempoSegundos / 60, tempoSegundos % 60)

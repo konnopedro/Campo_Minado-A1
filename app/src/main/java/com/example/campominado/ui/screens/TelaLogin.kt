@@ -29,14 +29,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.campominado.ui.theme.CampoMinadoTheme
 
-/** Tela visual de entrada. A autenticação real será feita pela camada de sessão. */
 @Composable
 fun TelaLogin(
     jogadores: List<String>,
     onEntrarComoJogador: (String) -> Unit,
     onEntrarComoAdmin: (usuario: String, senha: String) -> Unit,
     modifier: Modifier = Modifier,
-    erro: String? = null   // vem do SessaoUiState (ex.: senha do admin errada, nome vazio)
+    erro: String? = null
 ) {
     var jogadorSelecionado by remember(jogadores) { mutableStateOf(jogadores.firstOrNull().orEmpty()) }
     var novoJogador by remember { mutableStateOf("") }

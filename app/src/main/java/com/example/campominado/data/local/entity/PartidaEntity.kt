@@ -6,13 +6,6 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
-/**
- * Tabela "partidas": o resultado de cada partida jogada.
- * É a base do Histórico e dos Recordes (melhor tempo por nível).
- *
- * A chave estrangeira liga a partida ao jogador que jogou.
- * onDelete = CASCADE: se o jogador for excluído, as partidas dele também são.
- */
 @Entity(
     tableName = "partidas",
     foreignKeys = [
@@ -23,8 +16,7 @@ import androidx.room.PrimaryKey
             onDelete = ForeignKey.CASCADE
         )
     ],
-    // Índice na coluna da chave estrangeira: deixa as buscas por jogador mais rápidas
-    // e evita um aviso do Room na compilação.
+
     indices = [Index("jogadorId")]
 )
 data class PartidaEntity(
@@ -33,16 +25,14 @@ data class PartidaEntity(
 
     val jogadorId: Long,
 
-    val nivel: Int,            // 1 a 15
-    val tamanhoMapa: Int,      // 6 = mapa 6x6, 10 = mapa 10x10
-    val totalGalhos: Int,      // quantidade de galhos nesse nível
-    val casasAbertas: Int,     // quantas casas seguras o jogador abriu
-    val venceu: Boolean,       // Room guarda como 0 ou 1
+    val nivel: Int,
+    val tamanhoMapa: Int,
+    val totalGalhos: Int,
+    val casasAbertas: Int,
+    val venceu: Boolean,
     val tempoSegundos: Int,
     val data: Long = System.currentTimeMillis(),
 
-    // Nota que o jogador escreve sobre a partida, no Histórico. É o que o UPDATE da partida altera.
-    // defaultValue = "": as partidas antigas (banco versão 1) ficam com a nota vazia.
     @ColumnInfo(defaultValue = "")
     val anotacao: String = ""
 )

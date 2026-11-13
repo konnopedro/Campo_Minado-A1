@@ -8,7 +8,6 @@ import org.junit.Test
 
 class RegrasJogoTest {
 
-    // Semente fixa: o sorteio fica igual em toda execução do teste.
     private val random = Random(42)
 
     @Test
@@ -25,7 +24,7 @@ class RegrasJogoTest {
     @Test
     fun cascataAbreVizinhasDeCasaZero() {
         val t = RegrasJogo.abrir(RegrasJogo.criarTabuleiro(6, 4), 0, 0, random)
-        // Casa (0,0) tem 0 vizinhos, então ela e as 3 vizinhas abriram (pelo menos).
+
         assertTrue(t.casas.count { it.aberta } >= 4)
     }
 
