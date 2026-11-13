@@ -26,7 +26,6 @@ import com.example.campominado.data.local.entity.PartidaEntity
 import com.example.campominado.ui.theme.CampoMinadoTheme
 import com.example.campominado.ui.viewmodel.RecordeItem
 
-/** Lista os melhores tempos recebidos já ordenados pelo HistoricoViewModel. */
 @Composable
 fun TelaRecordes(
     recordes: List<RecordeItem>,
