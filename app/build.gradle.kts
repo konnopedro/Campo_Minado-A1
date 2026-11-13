@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
-    // Firebase: lê o google-services.json (sem ele o Firestore não sabe a qual projeto se conectar).
+
     alias(libs.plugins.google.services)
 }
 
@@ -67,9 +67,8 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
-    // Firebase Firestore (os níveis ficam na nuvem). O BOM fixa as versões compatíveis.
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore)
-    // Permite usar .await() nas tarefas do Firebase dentro de corrotinas.
+
     implementation(libs.kotlinx.coroutines.play.services)
 }
