@@ -1,12 +1,7 @@
 package com.example.campominado.logic
 
-/** Configuração de um nível: tamanho do mapa (fixo) e quantidade de galhos (o Admin pode mudar). */
 data class ConfigNivel(val nivel: Int, val tamanhoMapa: Int, val galhos: Int)
 
-/**
- * Valores padrão dos 15 níveis. São usados quando o Firestore não está disponível
- * (sem internet) ou ainda não tem a configuração.
- */
 object NiveisPadrao {
 
     val todos: List<ConfigNivel> = listOf(
@@ -19,6 +14,5 @@ object NiveisPadrao {
 
     fun buscar(nivel: Int): ConfigNivel? = todos.firstOrNull { it.nivel == nivel }
 
-    // Regra do Admin: de 1 galho até 25% das casas do mapa.
     fun maximoDeGalhos(tamanhoMapa: Int): Int = tamanhoMapa * tamanhoMapa / 4
 }
