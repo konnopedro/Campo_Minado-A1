@@ -5,7 +5,6 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-// Paleta de madeira inspirada no Tun Tun Clock.
 private val Fundo = Color(0xFF17120F)
 private val Superficie = Color(0xFF261D17)
 private val Madeira = Color(0xFFC58B55)
