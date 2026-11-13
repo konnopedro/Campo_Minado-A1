@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -81,8 +80,7 @@ fun AppNavigation(factory: ViewModelFactory) {
             if (mostrarBarra) {
                 NavigationBar(
                     containerColor = androidx.compose.material3.MaterialTheme.colorScheme.surface,
-                    contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
-                    windowInsets = NavigationBarDefaults.windowInsets
+                    contentColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface
                 ) {
                     itensBarra.forEach { item ->
                         NavigationBarItem(
