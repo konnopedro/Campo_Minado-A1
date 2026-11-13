@@ -16,13 +16,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** Estado das telas Jogo e Resultado. */
 data class JogoUiState(
     val carregando: Boolean = false,
     val nivel: Int = 1,
-    val tabuleiro: Tabuleiro? = null,     // null enquanto o nível não foi carregado
-    val segundos: Int = 0,                // cronômetro
-    val modoPlaca: Boolean = false,       // false = botão em "Abrir"; true = em "Placa"
+    val tabuleiro: Tabuleiro? = null,
+    val segundos: Int = 0,
+    val modoPlaca: Boolean = false,
     val partidaSalva: Boolean = false,
     val temProximoNivel: Boolean = false,
     val erro: String? = null
@@ -32,10 +31,6 @@ data class JogoUiState(
     val venceu: Boolean get() = estado == EstadoPartida.VITORIA
 }
 
-/**
- * Controla uma partida: carrega o nível, recebe os toques, conta o tempo e salva o resultado.
- * As regras em si (cascata, vitória...) ficam em RegrasJogo, em Kotlin puro.
- */
 class JogoViewModel(private val repository: JogoRepository) : ViewModel() {
 
     private val _uiState = MutableStateFlow(JogoUiState())
@@ -44,10 +39,6 @@ class JogoViewModel(private val repository: JogoRepository) : ViewModel() {
     private var jogadorId: Long = 0
     private var jobCronometro: Job? = null
 
-    /**
-     * Começa (ou recomeça) um nível. Usa os níveis já carregados pela tela de Níveis (em memória);
-     * só busca no Firestore se ainda não houver nenhum. Assim o jogo abre na hora.
-     */
     fun iniciar(nivel: Int, jogadorId: Long) {
         this.jogadorId = jogadorId
         pararCronometro()
@@ -65,7 +56,7 @@ class JogoViewModel(private val repository: JogoRepository) : ViewModel() {
                 nivel = nivel,
                 tabuleiro = RegrasJogo.criarTabuleiro(config.tamanhoMapa, config.galhos),
                 temProximoNivel = nivel < JogoRepository.NIVEL_MAXIMO,
-                // Se o Firestore falhou, o aviso aparece, mas dá para jogar com os valores padrão.
+
                 erro = carregados.erro
             )
         }
@@ -75,12 +66,10 @@ class JogoViewModel(private val repository: JogoRepository) : ViewModel() {
 
     fun irParaProximoNivel() = iniciar(_uiState.value.nivel + 1, jogadorId)
 
-    /** O botão "Abrir / Placa" troca entre os dois modos. */
     fun alternarModo() {
         _uiState.update { it.copy(modoPlaca = !it.modoPlaca) }
     }
 
-    /** Toque curto numa casa: abre ou põe placa, conforme o modo escolhido no botão. */
     fun aoTocar(linha: Int, coluna: Int) {
         val atual = _uiState.value
         val tabuleiro = atual.tabuleiro ?: return
@@ -89,7 +78,6 @@ class JogoViewModel(private val repository: JogoRepository) : ViewModel() {
         aplicar(novo)
     }
 
-    /** Toque longo: sempre põe/tira a placa, qualquer que seja o modo. */
     fun aoTocarLongo(linha: Int, coluna: Int) {
         val tabuleiro = _uiState.value.tabuleiro ?: return
         aplicar(RegrasJogo.alternarPlaca(tabuleiro, linha, coluna))
@@ -101,10 +89,9 @@ class JogoViewModel(private val repository: JogoRepository) : ViewModel() {
 
     private fun aplicar(novo: Tabuleiro) {
         val antes = _uiState.value.tabuleiro
-        if (novo === antes) return                    // o toque não mudou nada
+        if (novo === antes) return
         _uiState.update { it.copy(tabuleiro = novo) }
 
-        // O cronômetro começa no primeiro toque que abre uma casa (quando os galhos são sorteados).
         if (antes?.galhosSorteados == false && novo.galhosSorteados) iniciarCronometro()
 
         if (novo.estado != EstadoPartida.JOGANDO) {
@@ -128,10 +115,9 @@ class JogoViewModel(private val repository: JogoRepository) : ViewModel() {
         jobCronometro = null
     }
 
-    // Grava no Room (Histórico e Recordes). Se o jogador venceu, o Repository desbloqueia o próximo nível.
     private fun salvarPartida(tabuleiro: Tabuleiro) {
         val atual = _uiState.value
-        if (atual.partidaSalva) return                // evita salvar duas vezes
+        if (atual.partidaSalva) return
         _uiState.update { it.copy(partidaSalva = true) }
 
         viewModelScope.launch {
@@ -151,7 +137,6 @@ class JogoViewModel(private val repository: JogoRepository) : ViewModel() {
         }
     }
 
-    // Se a tela sair, o cronômetro não pode continuar rodando.
     override fun onCleared() {
         pararCronometro()
     }
